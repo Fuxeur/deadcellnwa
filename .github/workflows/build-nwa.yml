@@ -1,0 +1,26 @@
+name: Compiler le .nwa
+# A lancer depuis l'onglet "Actions" -> "Compiler le .nwa" -> "Run workflow", puis telecharger l'artefact DEAD_CELLS_NUMWORKS.nwa.
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Chaine de compilation ARM
+        run: sudo apt-get update && sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi libnewlib-arm-none-eabi make
+      - name: Compiler (greffe sur l'exemple officiel NumWorks)
+        run: ./build_nwa.sh
+      - name: Controle de taille (6000 Ko maximum)
+        run: |
+          ls -l DEAD_CELLS_NUMWORKS.nwa
+          test "$(wc -c < DEAD_CELLS_NUMWORKS.nwa)" -le 6000000
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DEAD_CELLS_NUMWORKS
+          path: DEAD_CELLS_NUMWORKS.nwa
